@@ -25,6 +25,12 @@ DEFAULTS = {
     "masthead_font": "UnifrakturMaguntia-Book.ttf",
     "serif_bold_font": "PT_Serif-Web-Bold.ttf",
     "serif_regular_font": "PT_Serif-Web-Regular.ttf",
+    # Target reader: "xteink" (Xteink X4 Pro: plain EPUB, synced by Calibre wireless) or
+    # "kobo" (KEPUB + Calibre-Web Kobo Sync shelf).
+    "device": "xteink",
+    # Optional folder that also receives a copy of the EPUB after every build (for manual
+    # upload to stock firmware, WebDAV, or a sync tool). Empty = skip.
+    "export_dir": "",
     # Calibre / Calibre-Web (all optional: without them the build stops after writing the EPUB).
     "calibre_enabled": True,
     "calibre_library": "/path/to/calibre/library",   # folder that holds metadata.db

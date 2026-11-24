@@ -1,4 +1,6 @@
-# kobo-morning-paper: a morning newspaper for your Kobo
+# kobo-morning-paper: a morning newspaper for your e-reader
+
+> **Xteink X4 Pro?** The default target is now the Xteink X4 Pro (plain EPUB, synced with Calibre wireless). See [docs/XTEINK_X4_PRO.md](docs/XTEINK_X4_PRO.md) for sync, CrossPoint firmware and Calibre plugin instructions. For a Kobo with Calibre-Web, set `"device": "kobo"` in `config.json`; the Kobo steps below then apply.
 
 Every morning a fresh EPUB of about 10 articles appears on your Kobo. You tap sync. No cable, no app.
 
@@ -18,7 +20,7 @@ This repo is the code behind that pipeline. You run it on your own server. Nothi
 2. **Curation** (5:30 AM): an LLM reads `interests.json` and picks about 10 articles into `queue.txt`. This step is **yours to plug in**. See `curate.example.sh` for the contract. No curation agent ships in this repo.
 3. **Fetch + extract** (`scripts/kobo-digest-build.py`, 6:00 AM): trafilatura turns each URL into clean article text.
 4. **Build edition**: ebooklib writes one EPUB, newest first, one chapter per article, with a generated cover and a tappable front page.
-5. **Calibre**: `calibredb add_format` replaces the format on the same book in place, then `scripts/kepub_ensure.py` adds a KEPUB.
+5. **Calibre** (Xteink: stop here, then sync with Calibre wireless): `calibredb add_format` replaces the format on the same book in place, then `scripts/kepub_ensure.py` adds a KEPUB.
 6. **Calibre-Web, Kobo Sync**: Calibre-Web offers the new edition over the Kobo Sync protocol.
 7. **Kobo**: tap sync.
 
@@ -75,7 +77,16 @@ This repo is the code behind that pipeline. You run it on your own server. Nothi
 
 7. **Schedule.** `crontab.example` has the 5:15 / 5:30 / 6:00 AM lines. Edit the paths and add them to your cron table.
 
+## Devices
+
+`device` in `config.json` picks the target:
+
+- `"xteink"` (default): builds the EPUB and replaces it on the single Calibre book. No KEPUB, no Kobo shelf, no Calibre-Web restart. Optional `export_dir` also receives a copy of the EPUB. The Kobo reading-activity source is skipped (its weight moves to the other sources).
+- `"kobo"`: the full Calibre-Web Kobo Sync flow described above.
+
 ## Files
+
+- `docs/XTEINK_X4_PRO.md`: Xteink X4 Pro guide.
 
 - `scripts/kobo-interests.py`: the interest model.
 - `scripts/kobo-queue.py`: `kobo:` URL intake.
