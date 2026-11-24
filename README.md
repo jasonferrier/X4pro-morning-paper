@@ -1,4 +1,4 @@
-# kobo-morning-paper: a morning newspaper for your e-reader
+# ereader-morning-paper: a morning newspaper for your e-reader
 
 > **Xteink X4 Pro?** The default target is now the Xteink X4 Pro (plain EPUB, synced with Calibre wireless). See [docs/XTEINK_X4_PRO.md](docs/XTEINK_X4_PRO.md) for sync, CrossPoint firmware and Calibre plugin instructions. For a Kobo with Calibre-Web, set `"device": "kobo"` in `config.json`; the Kobo steps below then apply.
 
