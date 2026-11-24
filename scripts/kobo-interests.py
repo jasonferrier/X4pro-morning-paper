@@ -92,6 +92,8 @@ def clean_title(t):
 # --- books_reading ----------------------------------------------------------------
 
 def kobo_reading(cfg, now=None):
+    if str(cfg.get("device", "xteink")).lower() != "kobo":
+        raise RuntimeError("device is not kobo; Kobo reading progress is unavailable")
     if not Path(CALIBRE_APP_DB).exists():
         raise RuntimeError("calibre_web_app_db not found; set it in config.json")
     now = now or datetime.now(timezone.utc)

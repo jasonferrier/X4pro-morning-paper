@@ -5,6 +5,9 @@
   "paper_tagline": "All the Reads Worth Your Time",
   "max_age_days": 7,
 
+  "device": "xteink",
+  "export_dir": "",
+
   "calibre_enabled": true,
   "calibre_library": "/path/to/calibre/library",
   "calibre_web_container": "calibre-web",

@@ -35,3 +35,19 @@ def test_queue_extracts_kobo_lines():
     spec.loader.exec_module(kq)
     assert kq.extract_urls("hi\nkobo: https://example.com/x\nkobo: <https://example.org/y>\nnope") == [
         "https://example.com/x", "https://example.org/y"]
+
+
+def test_xteink_is_default_and_kobo_gating():
+    import json
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import kobo_config
+    assert kobo_config.DEFAULTS["device"] == "xteink"
+    spec = importlib.util.spec_from_file_location("ki", ROOT / "scripts" / "kobo-interests.py")
+    ki = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ki)
+    try:
+        ki.kobo_reading({"device": "xteink"})
+    except RuntimeError as e:
+        assert "not kobo" in str(e)
+    else:
+        raise AssertionError("expected RuntimeError")

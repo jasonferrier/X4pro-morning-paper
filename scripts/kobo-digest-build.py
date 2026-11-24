@@ -733,6 +733,20 @@ def build_epub(articles: list[dict]) -> None:
     log(f"built EPUB with {len(chapters)} article(s) + interactive front page -> {EPUB_OUT}")
 
 
+IS_KOBO = str(CFG.get("device", "xteink")).lower() == "kobo"
+
+
+def export_epub() -> None:
+    """Copy the built EPUB to export_dir (stable file name, replaced each run)."""
+    if not CFG.get("export_dir"):
+        return
+    import shutil
+    dest = Path(CFG["export_dir"]).expanduser()
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy(EPUB_OUT, dest / EPUB_OUT.name)
+    log(f"exported {EPUB_OUT.name} to {dest}")
+
+
 def calibredb(args: list[str], timeout: int = 120) -> subprocess.CompletedProcess:
     """Run calibredb against the live library via the linuxserver/calibre image,
     mirroring the pattern annas-fetch uses. EPUB_OUT is mounted read-only."""
@@ -756,11 +770,12 @@ def update_calibre_book() -> int:
         r = calibredb(["add_format", str(book_id), staged, "--with-library", "/books"])
         if r.returncode == 0:
             log(f"replaced EPUB on Calibre book {book_id}")
-            # Refresh the KEPUB too, or the Kobo keeps getting a plain EPUB / a stale kepub.
-            sys.path.insert(0, str(Path(__file__).resolve().parent))
-            from kepub_ensure import ensure_kepub
-            log("refreshed KEPUB" if ensure_kepub(book_id, replace=True, backup=False)
-                else "KEPUB refresh failed (kepub-sweep will retry)")
+            if IS_KOBO:
+                # Refresh the KEPUB too, or the Kobo keeps getting a plain EPUB / a stale kepub.
+                sys.path.insert(0, str(Path(__file__).resolve().parent))
+                from kepub_ensure import ensure_kepub
+                log("refreshed KEPUB" if ensure_kepub(book_id, replace=True, backup=False)
+                    else "KEPUB refresh failed (kepub-sweep will retry)")
             # The Kobo fetches its cover thumbnail from calibre-web's cover endpoint,
             # which serves the LIBRARY cover file, not the EPUB's embedded image. The
             # EPUB replace alone leaves that file stale, so the device keeps showing the
@@ -882,12 +897,16 @@ def main(argv=None) -> int:
     if dry:
         log(f"DRY BUILD DONE: {len(articles)} items -> {EPUB_OUT} (no Calibre, no state saved)")
         return 0
+    export_epub()
     if not CFG["calibre_enabled"]:
         log(f"calibre_enabled is false: built {EPUB_OUT}, not touching Calibre")
         return 0
     book_id = update_calibre_book()
-    ensure_on_kobo_shelf(book_id)
-    restart_calibre_web()
+    if IS_KOBO:
+        ensure_on_kobo_shelf(book_id)
+        restart_calibre_web()
+    else:
+        log("Xteink: connect the reader with Calibre wireless to sync the new edition")
     # clear the queue: everything queued was either stored or logged as failed
     QUEUE.write_text("")
     log(f"DONE: +{added} new, {len(failed)} failed, {len(articles)} total in digest, Calibre book {book_id}")
